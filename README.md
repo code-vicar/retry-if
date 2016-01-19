@@ -31,29 +31,29 @@ if the 'try' function hasn't been successful by the fifth retry then the promise
 with an instance of MaxRetryError.
 
 if the 'try' function succeeds at some point during the chain then the promise will resolve with
-the return value of the tryFn
+the return value of the 'try' function
 
 The 'if' function is used to control the conditions under which a retry will happen.
 It receives any error/rejection in the 'try' function and should return/resolve a boolean.
 Returning true will indicate that a retry should occur, returning false will stop the retry
-chain and propogate the error to the catch block of the exec promise chain
+chain and propagate the error to the catch block of the exec promise chain
 
 ### Error handling
 
 All retry-if library errors inherit from RetryError and have an 'innerError' property that holds
 the original error thrown in the 'try' function.
 
-When the 'if' function returns false the original error is propogated
+When the 'if' function returns false the original error is propagated
 to the exec catch block
 
 When an unhandled error/rejection occurs in the 'if' function
-it will propogate to the exec catch block as an instance of IfFunctionError 
+it will propagate to the exec catch block as an instance of IfFunctionError 
 
 When a retry chain reaches the max number of retries an instance of MaxRetryError
-is propogated to the exec catch block
+is propagated to the exec catch block
 
 If an unknown growth option is set, an instance of RetryError will
-be propogated to the exec catch block 
+be propagated to the exec catch block 
 
 ## Example usage
 

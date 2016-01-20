@@ -14,7 +14,7 @@ The backoff delay is configurable and may be linear or exponential
 
 ## Flow
 
-With default settings   
+With default settings
 
 on exec -> 0 seconds
 

@@ -546,3 +546,25 @@ function sharedConditionalRetry() {
         })
     })
 }
+
+describe('Number.isInteger polyfill', function() {
+    before(function() {
+        this.isInt = Number.isInteger
+        Number.isInteger = undefined
+    })
+    
+    it('Should use the polyfill when Number.isInteger is undefined', function(done) {
+        new Retry()
+        new Retry({
+            maxRetry: 1.2
+        })
+        new Retry({
+            maxRetry: NaN
+        })
+        done()
+    })
+    
+    after(function() {
+        Number.isInteger = this.isInt
+    })
+})

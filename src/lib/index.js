@@ -24,7 +24,7 @@ export default class Retry {
             this.options.growthRate = 1000 // ms
         }
         
-        if (!Number.isInteger(this.options.maxRetry)) {
+        if (!isInteger(this.options.maxRetry)) {
             this.options.maxRetry = 5
         }
         
@@ -133,4 +133,12 @@ function linearGrowth(delay, growthRate) {
 
 function exponentialGrowth(delay, growthRate) {
     return delay * growthRate
+}
+
+function isInteger(value) {
+    if (Number.isInteger) {
+        return Number.isInteger(value)
+    }
+    
+    return (typeof value === "number" && isFinite(value) && Math.floor(value) === value)
 }

@@ -1,6 +1,7 @@
-tavis-ci build badge, test coverage badge, version badge
-
 # Retry-if
+[![Build Status](https://travis-ci.org/code-vicar/retry-if.svg?branch=master)](https://travis-ci.org/code-vicar/retry-if)
+[![Coverage Status](https://coveralls.io/repos/github/code-vicar/retry-if/badge.svg?branch=master)](https://coveralls.io/github/code-vicar/retry-if?branch=master)
+[![npm version](https://badge.fury.io/js/retry-if.svg)](https://badge.fury.io/js/retry-if)
 ## Conditional function retry with backoff
 
 This library exports a single class which facilitates the process of re-executing

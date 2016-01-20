@@ -1,3 +1,4 @@
+import Promise from 'bluebird'
 import { describe, it, before, beforeEach, after } from 'mocha'
 import { assert } from 'chai'
 import sinon from 'sinon'

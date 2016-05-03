@@ -1,5 +1,6 @@
 import Promise from 'bluebird'
 import _ from 'lodash'
+import moment from 'moment'
 
 import RetryError from './RetryError'
 import MaxRetryError from './MaxRetryError'
@@ -33,6 +34,11 @@ export default class Retry {
 
         if (!isInteger(this.options.maxRetry)) {
             this.options.maxRetry = 5
+        }
+
+        if (!_.isNil(this.options.deadline) && !moment(this.options.deadline).isValid()) {
+            console.warn('deadline option must be a datetime parseable by momentjs')
+            this.options.deadline = undefined
         }
 
         this.options.growth = this.options.growth || 'linear'

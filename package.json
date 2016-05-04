@@ -1,6 +1,6 @@
 {
   "name": "retry-if",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Conditional function retry with backoff",
   "main": "dist/lib/index.js",
   "scripts": {

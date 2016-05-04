@@ -8,6 +8,7 @@
     "prepublish": "npm run build",
     "test": "npm run build && mocha dist/test",
     "cover": "./scripts/cover.sh",
+    "coveralls": "./scripts/coveralls.sh",
     "test-debug": "npm run build && mocha --debug-brk dist/test",
     "test-watch": "watch \"npm run test 2> /dev/null\" src"
   },
@@ -46,6 +47,7 @@
   "dependencies": {
     "bluebird": "^3.1.1",
     "es6-error": "^2.0.2",
-    "lodash": "^3.10.1"
+    "lodash": "^4",
+    "moment": "^2.13.0"
   }
 }

@@ -4,7 +4,7 @@
 [![npm version](https://badge.fury.io/js/retry-if.svg)](https://badge.fury.io/js/retry-if)
 ## Conditional function retry with backoff
 
-This library exports a single class which facilitates the process of re-executing
+This library facilitates the process of re-executing
 a function under certain error conditions.
 
 A common use case is to retry an API request that returned
@@ -48,13 +48,16 @@ When the 'if' function returns false the original error is propagated
 to the exec catch block
 
 When an unhandled error/rejection occurs in the 'if' function
-it will propagate to the exec catch block as an instance of IfFunctionError 
+it will propagate to the exec catch block as an instance of IfFunctionError
 
 When a retry chain reaches the max number of retries an instance of MaxRetryError
 is propagated to the exec catch block
 
+If a deadline is given and the retry chain reaches the deadline an instance of RetryDeadlineError
+is propagated to the exec catch block
+
 If an unknown growth option is set, an instance of RetryError will
-be propagated to the exec catch block 
+be propagated to the exec catch block
 
 ## Example usage
 
@@ -63,7 +66,7 @@ npm install retry-if
 ```
 
 ```javascript
-import { Retry } from 'retry-if'
+import Retry from 'retry-if'
 
 let MockApi = {
     limit: true
@@ -113,41 +116,93 @@ var Retry = require('retry-if').default
 ## Options
 
 ```javascript
-import { Retry } from 'retry-if'
+import Retry from 'retry-if'
 
 let retry = new Retry(options)
 ```
 
 ### Where options is an object with the following properties
 
-    initialDelay : Number
+    baseRetryDelay : Number
 
-    growthRate   : Number
+    growthRate     : Number
 
-    growth       : (linear|exponential)
+    growth         : (linear|exponential)
 
-    maxRetry     : Number
+    maxRetry       : Integer
+
+    deadline       : Moment|ISO String|Number
+
+    firstTryDelay  : Number
 
 ### The defaults are
 
-    initialDelay : 1000 // ms
+    baseRetryDelay : 1000 // ms
 
-    growthRate   : 1000 // ms
+    growthRate     : 1000 // ms
 
-    growth       : linear
+    growth         : linear
 
-    maxRetry     : 5
-    
-### exponential example
+    maxRetry       : 5
 
-    initialDelay : 1000 // ms
-    
-    growthRate   : 2 // times
-    
-    growth       : exponential
-    
-    maxRetry     : 5
+    deadline       : no default
+
+    firstTryDelay  : no default
 
 When growth is linear, the value of growthRate is a number of milliseconds to linearly increase on each try
 
 When growth is exponential, the value of growthRate is the multiplier to apply on each try
+
+---------
+
+### exponential example
+
+    baseRetryDelay : 1000 // ms
+
+    growthRate     : 2 // times
+
+    growth         : exponential
+
+    maxRetry       : 5
+
+This example will re-try the function a maximum of 5 times (for a total of 6 invocations including the initial try)
+
+First call will happen immediately, followed by a re-try after 1 second, then additional retries will occur after 2 seconds, 4 seconds, 8 seconds, etc...
+
+---------
+
+### deadline example
+
+    baseRetryDelay : 1000 // ms
+
+    growthRate     : 0 // ms
+
+    growth         : linear
+
+    maxRetry       : 100
+
+    deadline       : moment().add(30, 's') // moment
+
+or
+
+    deadline       : '2016-05-03T17:00:00+08:00' // ISO string
+
+or
+
+    deadline       : 3000 // ms
+
+This example will re-try the function a maximum of 100 times **or** until the deadline is reached
+
+First call will happen immediately, followed by continuous retries after 1 second delays (no growth)
+
+This will continue until 100 retries, or until the deadline is reached
+
+---------
+
+### first try delay example
+
+    firstTryDelay  : 1000 // ms
+
+This example uses the default options with an additional delay before the first try.
+
+First call will happen after 1 second, followed by a retry after 1 second and subsequent retries inceasing by 1 second each time (2, 3, 4) until 5 retries have been reached

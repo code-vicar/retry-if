@@ -13,6 +13,9 @@ import RetryDeadlineError from '../lib/RetryDeadlineError'
 var RetryLib = rewire('../lib')
 var Retry = RetryLib.default
 
+// disable warnings from displaying in output
+console.warn = function(){}
+
 describe('Class', () => {
     it('Should exist', () => {
         assert.isFunction(Retry)
@@ -517,12 +520,28 @@ describe('Deadline', function() {
             console.warn.reset()
         })
 
-        it('should warn the user if deadline is not valid', function() {
+        it('should warn the user if deadline is not valid string', function() {
             let retry = new Retry({
                 deadline: 'incorrect format'
             })
 
-            assert.isTrue(console.warn.calledWithMatch(/momentjs/), 'warn user')
+            assert.isTrue(console.warn.calledWithMatch(/ISO Date/), 'warn user')
+        })
+
+        it('should warn the user if deadline is not valid Number', function() {
+            let retry = new Retry({
+                deadline: Number.NaN
+            })
+
+            assert.isTrue(console.warn.calledWithMatch(/Number/), 'warn user')
+        })
+
+        it('should warn the user if deadline is not valid moment object', function() {
+            let retry = new Retry({
+                deadline: moment('invalid moment')
+            })
+
+            assert.isTrue(console.warn.calledWithMatch(/moment/), 'warn user')
         })
 
         it('should create a valid moment if deadline is a valid moment object', function() {
@@ -536,7 +555,16 @@ describe('Deadline', function() {
 
         it('should create a valid moment if deadline is a valid ISO string', function() {
             let retry = new Retry({
-                deadline: moment('2016-05-03T16:19:43+00:00')
+                deadline: '2016-05-03T16:19:43+00:00'
+            })
+
+            assert.isTrue(console.warn.notCalled, 'did not warn user')
+            assert.isTrue(retry.options.deadline.isValid())
+        })
+
+        it('should create a valid moment if deadline is a valid Number', function() {
+            let retry = new Retry({
+                deadline: 30
             })
 
             assert.isTrue(console.warn.notCalled, 'did not warn user')
@@ -549,13 +577,13 @@ describe('Deadline', function() {
     })
 
     it('should throw a RetryDeadlineError if retry is not successful before deadline is reached', function(done) {
-        this.timeout(5000)
-        // retry 3 times waiting one second between tries
-        // deadline is 2 seconds from now
+        // retry 3 times waiting 100 milliseconds between tries (4 tries, 300 ms total)
+        // deadline is 200 milliseconds from now
         let retry = new Retry({
-            maxRetry: 2,
+            baseRetryDelay: 100,
+            maxRetry: 3,
             growthRate: 0,
-            deadline: moment().add(1, 's')
+            deadline: moment().add(200, 'ms')
         })
 
         let tryFn = sinon.stub()
@@ -565,6 +593,92 @@ describe('Deadline', function() {
             done(new Error('Should not be successful'))
         }).catch(function(err) {
             assert.instanceOf(err, RetryDeadlineError)
+        }).then(done).catch(done)
+    })
+
+    it('should throw a RetryDeadlineError if deadline is in the past', function(done) {
+        let retry = new Retry({
+            baseRetryDelay: 100,
+            maxRetry: 3,
+            growthRate: 0,
+            deadline: moment().subtract(200, 'ms')
+        })
+
+        let tryFn = sinon.stub()
+        tryFn.throws(new Error())
+
+        retry.try(tryFn).exec().then(function() {
+            done(new Error('Should not be successful'))
+        }).catch(function(err) {
+            assert.instanceOf(err, RetryDeadlineError)
+        }).then(done).catch(done)
+    })
+
+    it('should resolve successfully if finished before deadline', function(done) {
+        let retry = new Retry({
+            baseRetryDelay: 100,
+            maxRetry: 3,
+            growthRate: 0,
+            deadline: moment().add(200, 'ms')
+        })
+
+        let tryFn = sinon.stub()
+        let rand = Math.random()
+        tryFn.onCall(0).throws(new Error())
+        tryFn.onCall(1).returns(rand)
+
+        retry.try(tryFn).exec().then(function(val) {
+            assert.equal(val, rand, 'resolved correct value')
+        }).then(done).catch(done)
+    })
+})
+
+describe('First try delay', function() {
+    it('should default to 0', function() {
+        let retry = new Retry()
+        assert.equal(retry.options.firstTryDelay, 0)
+    })
+
+    it('should ignore invalid input and set to 0', function() {
+        let retry = new Retry({
+            firstTryDelay: 'blah'
+        })
+        assert.equal(retry.options.firstTryDelay, 0)
+        retry = new Retry({
+            firstTryDelay: '1'
+        })
+        assert.equal(retry.options.firstTryDelay, 0)
+        retry = new Retry({
+            firstTryDelay: Number.NaN
+        })
+        assert.equal(retry.options.firstTryDelay, 0)
+        retry = new Retry({
+            firstTryDelay: function(){}
+        })
+        assert.equal(retry.options.firstTryDelay, 0)
+    })
+
+    it('should be set to valid input', function() {
+        let retry = new Retry({
+            firstTryDelay: 1000
+        })
+        assert.equal(retry.options.firstTryDelay, 1000)
+    })
+
+    it('should wait the set amount of time before starting tries', function(done) {
+        let retry = new Retry({
+            firstTryDelay: 100
+        })
+        let now = moment()
+        let firstTry
+
+        let tryFn = function() {
+            firstTry = moment()
+        }
+
+        retry.try(tryFn).exec().then(function() {
+            let diff = firstTry.diff(now, 'ms')
+            assert.isTrue(diff >= 100 && diff <= 110, 'waited before trying')
         }).then(done).catch(done)
     })
 })

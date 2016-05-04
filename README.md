@@ -131,7 +131,7 @@ let retry = new Retry(options)
 
     maxRetry       : Integer
 
-    deadline       : Integer (epoch time)
+    deadline       : Moment|ISO String|Number
 
     firstTryDelay  : Number
 
@@ -181,9 +181,15 @@ First call will happen immediately, followed by a re-try after 1 second, then ad
 
     maxRetry       : 100
 
-    deadline       : 1457719610 // Fri, 11 Mar 2016 18:06:50 GMT
+    deadline       : moment().add(30, 's') // moment
 
+or
 
+    deadline       : '2016-05-03T17:00:00+08:00' // ISO string
+
+or
+
+    deadline       : 3000 // ms
 
 This example will re-try the function a maximum of 100 times **or** until the deadline is reached
 

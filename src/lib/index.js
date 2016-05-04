@@ -5,16 +5,21 @@ import moment from 'moment'
 import RetryError from './RetryError'
 import MaxRetryError from './MaxRetryError'
 import IfFunctionError from './IfFunctionError'
+import RetryDeadlineError from './RetryDeadlineError'
 
 export { RetryError, MaxRetryError, IfFunctionError }
+
+Promise.config({
+    cancellation: true
+})
 
 // options
 // baseRetryDelay = 1 second
 // growthRate     = 1 second
 // growth         = linear
 // maxRetry       = 5
+// firstTryDelay  = 0
 // deadline       = no default
-// firstTryDelay  = no default
 export default class Retry {
     constructor(options = {}) {
         this.options = options
@@ -36,10 +41,9 @@ export default class Retry {
             this.options.maxRetry = 5
         }
 
-        if (!_.isNil(this.options.deadline) && !moment(this.options.deadline).isValid()) {
-            console.warn('deadline option must be a datetime parseable by momentjs')
-            this.options.deadline = undefined
-        }
+        this.options.deadline = resolveDeadline(this.options.deadline)
+
+        this.options.firstTryDelay = resolveFirstTryDelay(this.options.firstTryDelay)
 
         this.options.growth = this.options.growth || 'linear'
 
@@ -78,7 +82,23 @@ export default class Retry {
             handleError: handleError
         }
 
-        return makeAttempt.call(context)
+        let timeout
+        if (context.options.deadline) {
+            let diffMS = context.options.deadline.diff(moment(), 'milliseconds')
+            if (diffMS <= 0) {
+                return Promise.reject(new RetryDeadlineError('Deadline is in the past', context.options.deadline))
+            }
+
+            timeout = diffMS
+        }
+
+        let prom = Promise.resolve().delay(context.options.firstTryDelay).bind(context).then(makeAttempt)
+
+        if (timeout) {
+            prom = prom.timeout(timeout, new RetryDeadlineError('Deadline has passed', context.options.deadline))
+        }
+
+        return prom
     }
 }
 
@@ -154,4 +174,30 @@ function isInteger(value) {
     }
 
     return (typeof value === "number" && isFinite(value) && Math.floor(value) === value)
+}
+
+function resolveDeadline(deadline) {
+    if (_.isNil(deadline) || (deadline instanceof moment && deadline.isValid())) {
+        return deadline
+    }
+
+    if (typeof deadline === 'number' && !Number.isNaN(deadline)) {
+        return moment().add(deadline, 'ms')
+    }
+
+    if (typeof deadline === 'string') {
+        let m = moment(deadline)
+        if (m.isValid()) {
+            return m
+        }
+    }
+
+    console.warn('deadline option must be an offset Number, ISO Date String, or moment object')
+}
+
+function resolveFirstTryDelay(firstTryDelay) {
+    if (typeof firstTryDelay !== 'number' || Number.isNaN(firstTryDelay)) {
+        return 0
+    }
+    return firstTryDelay
 }

@@ -1,8 +1,8 @@
 import RetryError from './RetryError'
 
 export default class RetryDeadlineError extends RetryError {
-    constructor(message, innerError, deadline) {
-        super(message, innerError)
+    constructor(message, deadline) {
+        super(message)
         this.deadline = deadline
     }
 }

@@ -8,6 +8,7 @@ import rewire from 'rewire'
 import RetryError from '../lib/RetryError'
 import MaxRetryError from '../lib/MaxRetryError'
 import IfFunctionError from '../lib/IfFunctionError'
+import RetryDeadlineError from '../lib/RetryDeadlineError'
 
 var RetryLib = rewire('../lib')
 var Retry = RetryLib.default
@@ -552,9 +553,9 @@ describe('Deadline', function() {
         // retry 3 times waiting one second between tries
         // deadline is 2 seconds from now
         let retry = new Retry({
-            maxRetry: 3,
+            maxRetry: 2,
             growthRate: 0,
-            deadline: moment().add(2, 's')
+            deadline: moment().add(1, 's')
         })
 
         let tryFn = sinon.stub()
@@ -564,8 +565,7 @@ describe('Deadline', function() {
             done(new Error('Should not be successful'))
         }).catch(function(err) {
             assert.instanceOf(err, RetryDeadlineError)
-            done()
-        })
+        }).then(done).catch(done)
     })
 })
 

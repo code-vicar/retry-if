@@ -1,5 +1,4 @@
 import Promise from 'bluebird'
-import _ from 'lodash'
 import moment from 'moment'
 
 import RetryError from './RetryError'
@@ -8,10 +7,6 @@ import IfFunctionError from './IfFunctionError'
 import RetryDeadlineError from './RetryDeadlineError'
 
 export { RetryError, MaxRetryError, IfFunctionError }
-
-Promise.config({
-    cancellation: true
-})
 
 // options
 // baseRetryDelay = 1 second
@@ -70,11 +65,18 @@ export default class Retry {
             return Promise.reject(new RetryError('No try function was provided'))
         }
 
+        // take snapshot of options to prevent external manipulation
+        const optionsSnapshot = {
+            ...this.options,
+            deadline: (this.options.deadline instanceof moment) ?
+                this.options.deadline.clone() : this.options.deadline
+        }
+
         let context = {
-            options: _.clone(this.options, true),
+            options: optionsSnapshot,
             state: {
                 attempt: 0,
-                delay: this.options.baseRetryDelay
+                delay: optionsSnapshot.baseRetryDelay
             },
             tryFn: this.tryFn,
             ifFn: this.ifFn,
@@ -177,7 +179,13 @@ function isInteger(value) {
 }
 
 function resolveDeadline(deadline) {
-    if (_.isNil(deadline) || (deadline instanceof moment && deadline.isValid())) {
+    // allow deadline to be unset
+    if (deadline === null || typeof deadline === 'undefined') {
+        return deadline
+    }
+
+    // deadline is set, resolve it to a moment
+    if (deadline instanceof moment && deadline.isValid()) {
         return deadline
     }
 

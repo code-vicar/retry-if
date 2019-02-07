@@ -2,20 +2,20 @@
   "name": "retry-if",
   "version": "1.1.0",
   "description": "Conditional function retry with backoff",
-  "main": "dist/lib/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "gulp",
-    "prepublish": "npm run build",
-    "test": "npm run build && mocha dist/test",
-    "cover": "./scripts/cover.sh",
-    "coveralls": "./scripts/coveralls.sh",
-    "test-debug": "npm run build && mocha --debug-brk dist/test",
+    "prepublishOnly": "npm run build",
+    "build": "babel src --out-dir dist",
+    "test": "mocha -r @babel/register test",
+    "cover": "BABEL_ENV=test nyc --require @babel/register --silent mocha --reporter dot --timeout 15000 \"test/**/*.js\" && nyc report",
+    "coveralls": "nyc report --reporter=text-lcov | coveralls",
+    "test-debug": "mocha -r @babel/register --inspect-brk test",
     "test-watch": "watch \"npm run test 2> /dev/null\" src"
   },
   "author": {
     "name": "Scott Vickers",
     "email": "scott.w.vickers@gmail.com",
-    "url": "http://mon.umento.us"
+    "url": "https://scottwvickers.com"
   },
   "repository": {
     "type": "git",
@@ -30,24 +30,23 @@
     "exponential"
   ],
   "devDependencies": {
-    "babel-preset-es2015": "^6.3.13",
-    "chai": "^3.4.1",
-    "coveralls": "^2.11.6",
-    "del": "^2.2.0",
-    "gulp": "^3.9.0",
-    "gulp-babel": "^6.1.1",
-    "gulp-sourcemaps": "^1.6.0",
-    "istanbul": "^1.0.0-alpha.2",
-    "mocha": "^2.3.4",
-    "node-inspector": "^0.12.5",
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.2.0",
+    "@babel/preset-env": "^7.2.0",
+    "@babel/register": "^7.0.0",
+    "babel-plugin-rewire": "^1.2.0",
+    "chai": "^4.2.0",
+    "coveralls": "^3.0.2",
+    "mocha": "^5.2.0",
+    "nyc": "^13.2.0",
     "rewire": "^2.5.1",
-    "sinon": "^1.17.2",
-    "watch": "^0.17.1"
+    "sinon": "^7.2.3",
+    "watch": "^1.0.2"
   },
   "dependencies": {
-    "bluebird": "^3.1.1",
-    "es6-error": "^2.0.2",
-    "lodash": "^4",
+    "bluebird": "^3.5.3",
+    "es6-error": "^4.1.1",
     "moment": "^2.13.0"
   }
 }

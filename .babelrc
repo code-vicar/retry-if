@@ -1,0 +1,24 @@
+{
+  "presets": [
+    ["@babel/env", {
+      "targets": {
+        "node": "current",
+        "browsers": ["last 3 versions"],
+        "ie": "11"
+      },
+    }]
+  ],
+  "plugins": [
+    [
+      "@babel/plugin-proposal-object-rest-spread",
+      { "loose": true }
+    ]
+  ],
+  "env": {
+    "test": {
+      "plugins": [
+        "babel-plugin-rewire"
+      ]
+    }
+  }
+}

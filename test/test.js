@@ -1,16 +1,15 @@
-import Promise from 'bluebird'
 import moment from 'moment'
-import { describe, it, before, beforeEach, after, afterEach } from 'mocha'
+import { describe, it, before, beforeEach, after } from 'mocha'
 import { assert } from 'chai'
 import sinon from 'sinon'
 import rewire from 'rewire'
 
-import RetryError from '../lib/RetryError'
-import MaxRetryError from '../lib/MaxRetryError'
-import IfFunctionError from '../lib/IfFunctionError'
-import RetryDeadlineError from '../lib/RetryDeadlineError'
+import RetryError from '../src/RetryError'
+import MaxRetryError from '../src/MaxRetryError'
+import IfFunctionError from '../src/IfFunctionError'
+import RetryDeadlineError from '../src/RetryDeadlineError'
 
-var RetryLib = rewire('../lib')
+var RetryLib = rewire('../src/index')
 var Retry = RetryLib.default
 
 // disable warnings from displaying in output
@@ -517,7 +516,7 @@ describe('Deadline', function() {
         })
 
         beforeEach(function() {
-            console.warn.reset()
+            console.warn.resetHistory()
         })
 
         it('should warn the user if deadline is not valid string', function() {

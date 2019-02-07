@@ -59,6 +59,16 @@ is propagated to the exec catch block
 If an unknown growth option is set, an instance of RetryError will
 be propagated to the exec catch block
 
+## Browser/node compatability
+
+This module should work with the following targets:
+
+  - node:
+    - 8+
+  - browsers:
+    - last 2 versions
+    - ie11
+
 ## Example usage
 
 ```

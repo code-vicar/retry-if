@@ -1,6 +1,9 @@
 {
   "name": "retry-if",
   "version": "1.1.0",
+  "engines": {
+    "node": ">=8"
+  },
   "description": "Conditional function retry with backoff",
   "main": "dist/index.js",
   "scripts": {
